@@ -1,0 +1,4 @@
+vars.php
+node_modules
+*.swp
+.idea

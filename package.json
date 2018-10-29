@@ -1,0 +1,25 @@
+{
+  "name": "auth0-duplicate-email",
+  "version": "1.0.0",
+  "description": "Workaround for duplicate Email in Auth0 Database",
+  "main": "custom-db/login.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/abbaspour/auth0-duplicate-email.git"
+  },
+  "author": "Amin Abbaspour",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/abbaspour/auth0-duplicate-email/issues"
+  },
+  "dependencies": {
+    "request": "^2.88.0",
+    "jsonwebtoken": "^8.3.0",
+    "auth0-extension-tools": "1.3.3",
+    "auth0": "^2.13.0"
+  },
+  "homepage": "https://github.com/abbaspour/auth0-duplicate-email#readme"
+}

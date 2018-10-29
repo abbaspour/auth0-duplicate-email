@@ -1,0 +1,8 @@
+<?php
+
+$AUTH0_DOMAIN = 'XXXX.YY.auth0.com';
+
+$AUTH0_CLIENT_ID = 'CCCC';
+$AUTH0_CLIENT_SECRET = 'XXXX;
+$AUTH0_AUDIENCE = 'https://' . $AUTH0_DOMAIN . '/api/v2/';
+$AUTH0_CONNECTION = 'fixer';
