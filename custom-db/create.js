@@ -5,7 +5,10 @@ function create(user, callback) {
 
     // create user in 'BE' database. append 'user.username' to 'user.email'
     // new email <- user.username + 'user.email
+    // NOTE: DO NOT uncomment following line unless you want to expose sign up with same emails to the world.
+    // NOTE: use `sign-up.sh` instead
     /*
+
     const tools = require('auth0-extension-tools');
 
     tools.managementApi.getClient({
