@@ -1,31 +1,22 @@
 #!/bin/bash
 
-# create a user in unique
-# create a user in fixer
-# link them
-
 set -eo pipefail
 
-declare -r db_BE='unique'
-declare -r db_FE='fixer'
-
-declare -r AUTH0_DOMAIN='AAA.BB.auth0.com'
-declare -r AUTH0_CLIENT_ID='CCCC'
-declare -r AUTH0_CLIENT_SECRET='XXXXX'
-
-declare -r AUTH0_DOMAIN_URL="https://$AUTH0_DOMAIN"
-declare -r AUTH0_AUDIENCE="${AUTH0_DOMAIN_URL}/api/v2/"
+declare -r DIR=$(dirname ${BASH_SOURCE[0]})
+[[ -f ${DIR}/.env ]] && . ${DIR}/.env
 
 function usage() {
     cat <<END >&2
-USAGE: $0 [-e env] [-u username] [-p password] [-m mail] [-v|-h]
-        -e file     # .env file location (default cwd)
-        -a token    # access_token. default from environment variable
-        -u username # username
-        -m email    # email
-        -p password # password
-        -h|?        # usage
-        -v          # verbose
+USAGE: $0 [-e env] [-t tenant] [-c client_id] [-x client_secret] [-u username] [-p password] [-m mail] [-d database] [-v|-h]
+        -e file         # .env file location (default cwd)
+        -c client_id    # Auth0 client ID
+        -x secret       # Auth0 client secret
+        -u username     # username
+        -m email        # email
+        -p password     # password
+        -d database     # backend database connection name
+        -h|?            # usage
+        -v              # verbose
 
 eg,
      $0 -u user01 -m a.abbaspour@gmail.com -p ramzvorood
@@ -47,33 +38,20 @@ EOL
     echo ${access_token}
 }
 
-function randomId() {
-    for i in {0..20}; do
-        echo -n $(( RANDOM % 10 ))
-    done
-}
-
 function create_user() {
     local db=$1
-    local user_id=$2
-    local username=$3
-    local password=$4
-    local email=$5
-    local real_email=$6
+    local username=$2
+    local password=$3
+    local real_email=$4
 
-    local app_metadata_field=''
-    [[ -n "${real_email}" ]] && app_metadata_field="\"app_metadata\": {\"real_email\" : \"${real_email}\"},"
-
-    local password_field=''
-    [[ -n "${password}" ]] && password_field="\"password\": \"${password}\","
+    local email="${username}+${email}"
 
     declare BODY=$(cat <<EOL
 {
       "connection": "${db}",
-      "user_id": "${user_id}",
       "username" : "${username}",
-      ${app_metadata_field}
-      ${password_field}
+      "app_metadata": {"real_email" : "${real_email}"},
+      "password": "${password}",
       "email" : "${email}"
 }
 EOL
@@ -87,11 +65,14 @@ EOL
 
 }
 
-while getopts "e:a:u:m:p:hv?" opt
+while getopts "e:r:c:x:d:u:m:p:hv?" opt
 do
     case ${opt} in
         e) source ${OPTARG};;
-        a) access_token=${OPTARG};;
+        t) AUTH0_DOMAIN=`echo ${OPTARG}.auth0.com | tr '@' '.'`;;
+        c) AUTH0_CLIENT_ID=${OPTARG};;
+        x) AUTH0_CLIENT_SECRET=${OPTARG};;
+        d) AUTH0_CONNECTION=${OPTARG};;
         u) username=${OPTARG};;
         m) email=${OPTARG};;
         p) password=${OPTARG};;
@@ -102,6 +83,14 @@ do
 done
 
 
+[[ -z ${AUTH0_DOMAIN} ]] && { echo >&2 "ERROR: AUTH0_DOMAIN undefined"; usage 1; }
+[[ -z ${AUTH0_CLIENT_ID} ]] && { echo >&2 "ERROR: AUTH0_CLIENT_ID undefined"; usage 1; }
+[[ -z ${AUTH0_CLIENT_SECRET} ]] && { echo >&2 "ERROR: AUTH0_CLIENT_SECRET undefined"; usage 1; }
+[[ -z ${AUTH0_CONNECTION} ]] && { echo >&2 "ERROR: AUTH0_CONNECTION undefined"; usage 1; }
+
+declare -r AUTH0_DOMAIN_URL="https://$AUTH0_DOMAIN"
+declare -r AUTH0_AUDIENCE="${AUTH0_DOMAIN_URL}/api/v2/"
+
 declare -r access_token=$(get_access_token)
 #echo $access_token
 #[[ -z ${access_token+x} ]] && { echo >&2 "ERROR: no 'access_token' defined. export access_token=\`pbpaste\`"; exit 1; }
@@ -111,8 +100,5 @@ declare -r access_token=$(get_access_token)
 [[ -z ${password} ]] && { echo >&2 "ERROR: password undefined"; usage 1; }
 [[ -z ${email} ]] && { echo >&2 "ERROR: email undefined"; usage 1; }
 
-declare user_id=$(randomId)
-declare be_user_id="${user_id}"
-
-echo "creating user in BE: ${be_user_id} / ${username} / ${username}+${email}"
-create_user ${db_BE} ${be_user_id} ${username} ${password} "${username}+${email}" ${email}
+echo "creating user in ${AUTH0_CONNECTION} database: ${username} / ${username}+${email}"
+create_user ${AUTH0_CONNECTION} ${username} ${password} ${email}

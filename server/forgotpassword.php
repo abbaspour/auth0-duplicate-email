@@ -125,7 +125,7 @@ $result_string = file_get_contents($url, false, $context);
 $result = json_decode($result_string, true);
 
 $ticket = $result['ticket'];
-#echo '<br/>ticket: ' . $ticket;
+echo '<br/>ticket: ' . $ticket;
 
 mail($email, "Chane Password", $ticket);
 
