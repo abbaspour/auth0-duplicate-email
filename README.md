@@ -4,23 +4,27 @@ Users with duplicate non-unique Emails in Auth0
 # Setup
 
 ## 1. Create a Database Connection
-Name: unique
+Name: unique. Turn on username required.
 
 ## 2. Create a custom non-migrating DB
 Name: fixer
-Turn on custom database and copy scripts from `custom-db/` folder.
+
+Turn on custom database and copy scripts from `custom-db/` folder. Turn on username required.
 
 ## 3. Application
 Create an M2M Application.
-Allocate both `unique` and `fixer` connections to this app.
-Assign Management API. All 'users' and 'ticket' scopes
-Copy application details to `.env`, `server/env.php` files
+
+1. Allocate both `unique` and `fixer` connections to this app.
+2. Assign Management API. All 'users' and 'ticket' scopes
+3. Copy application details to `.env`, `server/env.php` files
 
 ## 4. Update fixer Custom DB Configuration
-|| Name || Value ||
+
+| Name | Value |
+| ----- | ----- |
 | Client_ID | M2M Client ID |
 | Client_Secret | M2M Client Secret |
-| Connection | unique |
+| Connection | `unique` |
 
 ## 6. Rule
 Add `rules/merger.js` to Rules.
@@ -30,7 +34,7 @@ Add `rules/merger.js` to Rules.
 ```js
     var lock = new Auth0Lock(config.clientID, config.auth0Domain, {
       // ....
-      forgotPasswordLink: 'http://mycompany.com/forgotpassword.php'
+      forgotPasswordLink: 'http://localhost:8080/forgotpassword.php'
     });
 ```
 ## 6. Forgotten Password Page
@@ -48,10 +52,10 @@ php -S localhost:8080 -t server
 ./sign-up.sh -u user03 -m email@example.com -p password3
 ```
 
-## 2. Sign in with Email
+## 2. Sign in with Username
 ```
 https://tenant.auth0.com/authroize?connection=fixer
 ```
 
-### 3. Password Reset
+## 3. Password Reset
 In the login page, click on "forgotten password" link. Enter username for reset email.
